@@ -5,6 +5,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { ThemeContext } from '../theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { hslToHex } from '../utils/colors';
 
 interface SavedPaletteCardProps {
   palette: SavedPalette;
@@ -90,7 +91,9 @@ const SavedPaletteCard: React.FC<SavedPaletteCardProps> = ({
         {palette.colors.map((hsl, i) => {
           const css = hslArrayToCss(hsl);
           return (
-            <View key={i} style={[styles.swatch, { backgroundColor: css }]} />
+            <View key={i} style={[styles.swatch, { backgroundColor: css }]}>
+              <Text style={styles.hexText}>{hslToHex(hsl[0], hsl[1] * 100, hsl[2] * 100)}</Text>
+            </View>
           );
         })}
       </View>
@@ -164,6 +167,14 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
     marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hexText: {
+    fontSize: 8,
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 2,
   },
   reorderContainer: {
     flexDirection: 'row',

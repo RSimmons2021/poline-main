@@ -8,7 +8,7 @@ import RoomMockup from '../components/RoomMockup';
 import AnchorEditor from '../components/AnchorEditor';
 import { savePalette } from '../utils/storage';
 import { ThemeContext } from '../theme/ThemeContext';
-import { getMaterialSuggestion, getContrastTextColor } from '../utils/colors';
+import { getMaterialSuggestion, getContrastTextColor, hslToHex } from '../utils/colors';
 import { PolineColorWheel } from '../components/PolineColorWheel';
 import Animated, { useSharedValue, useAnimatedStyle, useAnimatedProps, withTiming } from 'react-native-reanimated';
 
@@ -160,22 +160,7 @@ const InteriorScreen = () => {
           ))}
         </View>
 
-        {/* Color Wheel Visualization */}
-        {polineInstance && (
-          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
-              <View style={styles.wheelContainer}>
-                <PolineColorWheel
-                  poline={polineInstance}
-                  size={280}
-                  showPaletteColors={true}
-                  reduceMotion={reduceMotion}
-                />
-              </View>
-            </View>
-          </BlurView>
-        )}
+        
 
         {palette && (
           <View style={styles.paletteContainer}>
@@ -194,7 +179,7 @@ const InteriorScreen = () => {
                 const textColor = getContrastTextColor(hsl);
                 return (
                   <View key={i} style={[styles.metaItem, { backgroundColor: bgColor, borderRadius: 8, padding: 4 }]}>
-                    <Text style={[styles.metaText, { color: textColor }]}>{hslArrayToCss(hsl)}</Text>
+                    <Text style={[styles.metaText, { color: textColor }]}>{hslToHex(hsl[0], hsl[1] * 100, hsl[2] * 100)}</Text>
                   </View>
                 );
               })}

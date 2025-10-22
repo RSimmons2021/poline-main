@@ -10,7 +10,8 @@ import { toProtanopia, toDeuteranopia } from '../utils/colorBlindness';
 import { ThemeContext } from '../theme/ThemeContext';
 import AnimatedTile from '../components/AnimatedTile';
 import { PolineColorWheel } from '../components/PolineColorWheel';
-import { getContrastTextColor } from '../utils/colors';
+import ColorCombos from '../components/ColorCombos';
+import { getContrastTextColor, hslToHex, rgbToHsl } from '../utils/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -31,16 +32,46 @@ const ExploreScreen = () => {
   const [simulation, setSimulation] = useState<SimulationType>('none');
   const pulse = useSharedValue(0);
   const animatedBackgroundColors = useSharedValue<string[]>(isDark ? ["#0f0f12", "#121216"] : [theme.background, theme.background]);
+  const [colorCombos, setColorCombos] = useState([]);
+
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/mattdesl/dictionary-of-colour-combinations/master/colors.json')
+      .then(response => response.json())
+      .then(data => {
+        setColorCombos(data);
+      });
+  }, []);
 
   const generateRandomPalette = () => {
-    const gen = new Poline({ numPoints: localNumPoints });
-    setPalette(gen.colors);
-    setPolineInstance(gen);
+    if (colorCombos.length > 0) {
+      let anchorColors = [];
+      while (anchorColors.length < 2) {
+        const randomColor = colorCombos[Math.floor(Math.random() * colorCombos.length)];
+        anchorColors = [randomColor.rgb];
+        if (randomColor.combinations) {
+          randomColor.combinations.forEach(comboIndex => {
+            if (colorCombos[comboIndex]) {
+              anchorColors.push(colorCombos[comboIndex].rgb);
+            }
+          });
+        }
+      }
+
+      const hslAnchorColors = anchorColors.map(color => rgbToHsl(color[0], color[1], color[2]));
+      console.log('localNumPoints:', localNumPoints);
+      console.log('hslAnchorColors.length:', hslAnchorColors.length);
+
+      const gen = new Poline({ anchorColors: hslAnchorColors.slice(0, localNumPoints), numPoints: localNumPoints });
+      setPalette(gen.colors);
+      setPolineInstance(gen);
+    }
   };
 
   useEffect(() => {
-    generateRandomPalette();
-  }, [localNumPoints]); // Regenerate palette when localNumPoints changes
+    if (colorCombos.length > 0) {
+      generateRandomPalette();
+    }
+  }, [colorCombos, localNumPoints]); // Regenerate palette when localNumPoints changes
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -107,46 +138,12 @@ const ExploreScreen = () => {
       </View>
 
       <View style={styles.content}>
-        {/* Palette Size Control */}
-        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Palette Size: {localNumPoints} colors</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={3}
-              maximumValue={10}
-              step={1}
-              value={localNumPoints}
-              onSlidingComplete={setLocalNumPoints}
-              minimumTrackTintColor={theme.primary}
-              maximumTrackTintColor={theme.subtext}
-              thumbTintColor={theme.primary}
-            />
-          </View>
-        </BlurView>
-
-        {/* Color Wheel Visualization */}
-        {polineInstance && (
-          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
-              <View style={styles.wheelContainer}>
-                <PolineColorWheel
-                  poline={polineInstance}
-                  size={280}
-                  showPaletteColors={true}
-                  reduceMotion={reduceMotion}
-                />
-              </View>
-            </View>
-          </BlurView>
-        )}
-
         {/* Generated Palette */}
         <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
           <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
             <View style={styles.cardHeaderRow}>
               <Text style={[styles.cardTitle, { color: theme.text }]}>Generated Palette</Text>
+              <Text style={[styles.inspiration, { color: theme.subtext }]}>(inspired by A Dictionary of Color Combinations)</Text>
               <View style={styles.actionsContainer}>
                 <TouchableOpacity
                   onPress={generateRandomPalette}
@@ -181,13 +178,50 @@ const ExploreScreen = () => {
                 const textColor = getContrastTextColor(hsl);
                 return (
                   <View key={i} style={[styles.metaItem, { backgroundColor: bgColor, borderRadius: 8, padding: 4 }]}>
-                    <Text style={[styles.metaText, { color: textColor }]}>{hslArrayToCss(hsl)}</Text>
+                    <Text style={[styles.metaText, { color: textColor }]}>{hslToHex(hsl[0], hsl[1] * 100, hsl[2] * 100)}</Text>
                   </View>
                 );
               })}
             </View>
           </View>
         </BlurView>
+
+        <ColorCombos />
+
+        {/* Palette Size Control */}
+        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Palette Size: {localNumPoints} colors</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={3}
+              maximumValue={10}
+              step={1}
+              value={localNumPoints}
+              onSlidingComplete={setLocalNumPoints}
+              minimumTrackTintColor={theme.primary}
+              maximumTrackTintColor={theme.subtext}
+              thumbTintColor={theme.primary}
+            />
+          </View>
+        </BlurView>
+
+        {/* Color Wheel Visualization */}
+        {polineInstance && (
+          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
+              <View style={styles.wheelContainer}>
+                <PolineColorWheel
+                  poline={polineInstance}
+                  size={280}
+                  showPaletteColors={true}
+                  reduceMotion={reduceMotion}
+                />
+              </View>
+            </View>
+          </BlurView>
+        )}
 
         {/* Color Blindness Simulator */}
         <View style={styles.simulatorContainer}>
@@ -239,6 +273,12 @@ const styles = StyleSheet.create({
   },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   cardTitle: { fontSize: 18, fontFamily: 'Inter_400Regular', fontWeight: '600' },
+  inspiration: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    fontStyle: 'italic',
+    marginLeft: 10,
+  },
   actionsContainer: { flexDirection: 'row' },
   actionButton: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, marginLeft: 10 },
   actionText: { fontSize: 12, fontFamily: 'Inter_400Regular' },

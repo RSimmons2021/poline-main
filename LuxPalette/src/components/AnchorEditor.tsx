@@ -73,55 +73,7 @@ const AnchorEditor: React.FC<AnchorEditorProps> = ({ anchorColors, onAnchorColor
 
   return (
     <View style={styles.container}>
-      <View style={styles.colorWheelContainer} {...panResponder.panHandlers}>
-        <Svg height={CIRCLE_RADIUS * 2 + 40} width={width}>
-          {/* Hue Ring (simplified for now) */}
-          <Circle
-            cx={CENTER_X}
-            cy={CENTER_Y}
-            r={CIRCLE_RADIUS}
-            stroke="gray"
-            strokeWidth="1"
-            fill="transparent"
-          />
-          {/* Saturation Gradient (simplified for now) */}
-          <Circle
-            cx={CENTER_X}
-            cy={CENTER_Y}
-            r={CIRCLE_RADIUS - 10}
-            stroke="lightgray"
-            strokeWidth="1"
-            fill="transparent"
-          />
-
-          {anchorColors.map((color, index) => {
-            const { angle, radius } = hslToPolar(color[0], color[1], color[2]);
-            const x = CENTER_X + radius * Math.cos((angle - 90) * Math.PI / 180);
-            const y = CENTER_Y + radius * Math.sin((angle - 90) * Math.PI / 180);
-
-            return (
-              <G key={index}>
-                <Line
-                  x1={CENTER_X}
-                  y1={CENTER_Y}
-                  x2={x}
-                  y2={y}
-                  stroke={theme.primary}
-                  strokeWidth="1"
-                />
-                <Circle
-                  cx={x}
-                  cy={y}
-                  r="10"
-                  fill={`hsl(${color[0]}, ${color[1] * 100}%, ${color[2] * 100}%)`}
-                  stroke={theme.text}
-                  strokeWidth="2"
-                />
-              </G>
-            );
-          })}
-        </Svg>
-      </View>
+      
 
       {anchorColors.map((color, index) => (
         <View key={index} style={[styles.anchorContainer, { backgroundColor: theme.card }]}>
