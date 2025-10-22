@@ -119,7 +119,7 @@ const InteriorScreen = () => {
   });
 
   return (
-    <ScrollView key={localNumPoints} style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <AnimatedLinearGradient
         animatedProps={animatedGradientProps}
         style={StyleSheet.absoluteFill}
@@ -139,7 +139,7 @@ const InteriorScreen = () => {
               maximumValue={10}
               step={1}
               value={localNumPoints}
-              onValueChange={setLocalNumPoints}
+              onSlidingComplete={setLocalNumPoints}
               minimumTrackTintColor={theme.primary}
               maximumTrackTintColor={theme.subtext}
               thumbTintColor={theme.primary}
