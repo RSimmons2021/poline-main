@@ -2,12 +2,15 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, ScrollView } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Poline } from 'poline';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, Easing, cancelAnimation } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, useAnimatedProps, withTiming, withRepeat, Easing, cancelAnimation } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import Slider from '@react-native-community/slider';
 import { savePalette } from '../utils/storage';
 import { toProtanopia, toDeuteranopia } from '../utils/colorBlindness';
 import { ThemeContext } from '../theme/ThemeContext';
 import AnimatedTile from '../components/AnimatedTile';
+import { PolineColorWheel } from '../components/PolineColorWheel';
+import { getContrastTextColor } from '../utils/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -21,20 +24,23 @@ function hslArrayToCss(hsl: number[]): string {
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const ExploreScreen = () => {
-  const { theme, isDark, reduceMotion, numPoints } = useContext(ThemeContext);
+  const { theme, isDark, reduceMotion, numPoints: globalNumPoints } = useContext(ThemeContext);
+  const [localNumPoints, setLocalNumPoints] = useState(globalNumPoints);
   const [palette, setPalette] = useState<number[][]>([]);
+  const [polineInstance, setPolineInstance] = useState<Poline | null>(null);
   const [simulation, setSimulation] = useState<SimulationType>('none');
   const pulse = useSharedValue(0);
   const animatedBackgroundColors = useSharedValue<string[]>(isDark ? ["#0f0f12", "#121216"] : [theme.background, theme.background]);
 
   const generateRandomPalette = () => {
-    const gen = new Poline({ numPoints: numPoints });
+    const gen = new Poline({ numPoints: localNumPoints });
     setPalette(gen.colors);
+    setPolineInstance(gen);
   };
 
   useEffect(() => {
     generateRandomPalette();
-  }, [numPoints]); // Regenerate palette when numPoints changes
+  }, [localNumPoints]); // Regenerate palette when localNumPoints changes
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -83,19 +89,17 @@ const ExploreScreen = () => {
 
   const simulatedPalette = getSimulatedPalette();
 
-  const animatedGradientStyle = useAnimatedStyle(() => {
+  const animatedGradientProps = useAnimatedProps(() => {
     return {
-      // This is a workaround as Animated.createAnimatedComponent(LinearGradient)
-      // expects an array of colors directly. We'll pass the animated value.
-      // The actual animation of colors array is handled by animatedBackgroundColors.value
+      colors: animatedBackgroundColors.value,
     };
   });
 
   return (
-    <ScrollView key={numPoints} style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView key={localNumPoints} style={[styles.container, { backgroundColor: theme.background }]}>
       <AnimatedLinearGradient
-        colors={animatedBackgroundColors.value} // Pass the animated value directly
-        style={[StyleSheet.absoluteFill, animatedGradientStyle]}
+        animatedProps={animatedGradientProps}
+        style={StyleSheet.absoluteFill}
       />
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Explore Palettes</Text>
@@ -103,6 +107,42 @@ const ExploreScreen = () => {
       </View>
 
       <View style={styles.content}>
+        {/* Palette Size Control */}
+        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Palette Size: {localNumPoints} colors</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={3}
+              maximumValue={10}
+              step={1}
+              value={localNumPoints}
+              onValueChange={setLocalNumPoints}
+              minimumTrackTintColor={theme.primary}
+              maximumTrackTintColor={theme.subtext}
+              thumbTintColor={theme.primary}
+            />
+          </View>
+        </BlurView>
+
+        {/* Color Wheel Visualization */}
+        {polineInstance && (
+          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
+              <View style={styles.wheelContainer}>
+                <PolineColorWheel
+                  poline={polineInstance}
+                  size={280}
+                  showPaletteColors={true}
+                  reduceMotion={reduceMotion}
+                />
+              </View>
+            </View>
+          </BlurView>
+        )}
+
+        {/* Generated Palette */}
         <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
           <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
             <View style={styles.cardHeaderRow}>
@@ -136,15 +176,20 @@ const ExploreScreen = () => {
             </View>
 
             <View style={styles.metaRow}>
-              {simulatedPalette.map((hsl, i) => (
-                <View key={i} style={styles.metaItem}>
-                  <Text style={[styles.metaText, { color: theme.subtext }]}>{hslArrayToCss(hsl)}</Text>
-                </View>
-              ))}
+              {simulatedPalette.map((hsl, i) => {
+                const bgColor = hslArrayToCss(hsl);
+                const textColor = getContrastTextColor(hsl);
+                return (
+                  <View key={i} style={[styles.metaItem, { backgroundColor: bgColor, borderRadius: 8, padding: 4 }]}>
+                    <Text style={[styles.metaText, { color: textColor }]}>{hslArrayToCss(hsl)}</Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
         </BlurView>
 
+        {/* Color Blindness Simulator */}
         <View style={styles.simulatorContainer}>
           <Text style={[styles.simulatorTitle, { color: theme.text }]}>Color Blindness Simulator</Text>
           <View style={styles.simulatorButtons}>
@@ -199,8 +244,10 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 12, fontFamily: 'Inter_400Regular' },
   swatchRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  metaItem: { width: (width - 80) / 5, alignItems: 'center' },
+  metaItem: { flex: 1, alignItems: 'center', marginHorizontal: 2 },
   metaText: { fontSize: 10, textAlign: 'center', fontFamily: 'Inter_400Regular' },
+  slider: { width: '100%', height: 40 },
+  wheelContainer: { alignItems: 'center', justifyContent: 'center' },
   simulatorContainer: {
     marginTop: 20,
   },

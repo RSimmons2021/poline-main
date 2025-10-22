@@ -36,9 +36,7 @@ const styles = StyleSheet.create({
   swatchTile: {
     height: 110,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    boxShadow: '0px 5px 12px rgba(0, 0, 0, 0.35)',
   },
 });
 

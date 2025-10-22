@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Slider from '@react-native-community/slider';
 import { Poline } from 'poline';
 import RoomMockup from '../components/RoomMockup';
 import AnchorEditor from '../components/AnchorEditor';
 import { savePalette } from '../utils/storage';
 import { ThemeContext } from '../theme/ThemeContext';
-import { getMaterialSuggestion } from '../utils/colors';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { getMaterialSuggestion, getContrastTextColor } from '../utils/colors';
+import { PolineColorWheel } from '../components/PolineColorWheel';
+import Animated, { useSharedValue, useAnimatedStyle, useAnimatedProps, withTiming } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -46,27 +49,32 @@ const presets = [
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const InteriorScreen = () => {
-  const { theme, isDark, numPoints } = useContext(ThemeContext);
+  const { theme, isDark, numPoints: globalNumPoints, reduceMotion } = useContext(ThemeContext);
+  const [localNumPoints, setLocalNumPoints] = useState(globalNumPoints);
   const [palette, setPalette] = useState<number[][] | null>(null);
+  const [polineInstance, setPolineInstance] = useState<Poline | null>(null);
   const [anchorColors, setAnchorColors] = useState<number[][]>(presets[0].config.anchorColors);
   const animatedBackgroundColors = useSharedValue<string[]>(isDark ? ["#0f0f12", "#121216"] : [theme.background, theme.background]);
 
   const generatePalette = (anchors: number[][]) => {
-    const gen = new Poline({ anchorColors: anchors, numPoints: numPoints });
+    const gen = new Poline({ anchorColors: anchors, numPoints: localNumPoints });
     setPalette(gen.colors);
+    setPolineInstance(gen);
   };
 
   const generateRandomPalette = () => {
-    const gen = new Poline({ numPoints: numPoints });
-    setPalette(gen.colors);
-    // When randomizing, we should also update anchorColors to reflect the new random palette
-    // For simplicity, we'll just use the first few colors as anchors if available
-    setAnchorColors(gen.colors.slice(0, 3)); // Take first 3 colors as anchors
+    // Generate random palette while keeping the same theme (maintain anchor structure)
+    const randomAnchors = anchorColors.map((anchor) => {
+      // Randomize hue but keep similar saturation and lightness for theme consistency
+      const randomHue = Math.random() * 360;
+      return [randomHue, anchor[1] + (Math.random() - 0.5) * 0.2, anchor[2] + (Math.random() - 0.5) * 0.2];
+    });
+    setAnchorColors(randomAnchors);
   };
 
   useEffect(() => {
     generatePalette(anchorColors);
-  }, [anchorColors, numPoints]); // Regenerate palette when numPoints changes
+  }, [anchorColors, localNumPoints]); // Regenerate palette when localNumPoints changes
 
   useEffect(() => {
     if (palette && palette.length > 0) {
@@ -104,35 +112,70 @@ const InteriorScreen = () => {
 
   const materialSuggestion = palette && palette.length > 0 ? getMaterialSuggestion(palette[0]) : '';
 
-  const animatedGradientStyle = useAnimatedStyle(() => {
+  const animatedGradientProps = useAnimatedProps(() => {
     return {
-      // This is a workaround as Animated.createAnimatedComponent(LinearGradient)
-      // expects an array of colors directly. We'll pass the animated value.
-      // The actual animation of colors array is handled by animatedBackgroundColors.value
+      colors: animatedBackgroundColors.value,
     };
   });
 
   return (
-    <ScrollView key={numPoints} style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView key={localNumPoints} style={[styles.container, { backgroundColor: theme.background }]}>
       <AnimatedLinearGradient
-        colors={animatedBackgroundColors.value}
-        style={[StyleSheet.absoluteFill, animatedGradientStyle]}
+        animatedProps={animatedGradientProps}
+        style={StyleSheet.absoluteFill}
       />
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Interior Design</Text>
         <Text style={[styles.subtitle, { color: theme.subtext }]}>Palettes for your home</Text>
       </View>
       <View style={styles.content}>
+        {/* Palette Size Control */}
+        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Palette Size: {localNumPoints} colors</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={3}
+              maximumValue={10}
+              step={1}
+              value={localNumPoints}
+              onValueChange={setLocalNumPoints}
+              minimumTrackTintColor={theme.primary}
+              maximumTrackTintColor={theme.subtext}
+              thumbTintColor={theme.primary}
+            />
+          </View>
+        </BlurView>
+
+        {/* Preset Styles */}
         <View style={styles.presetContainer}>
           {presets.map((preset) => (
             <TouchableOpacity
               key={preset.name}
-              style={[styles.presetButton, { backgroundColor: theme.card }]}              onPress={() => handlePresetSelect(preset)}
+              style={[styles.presetButton, { backgroundColor: theme.card }]}
+              onPress={() => handlePresetSelect(preset)}
             >
               <Text style={[styles.presetButtonText, { color: theme.text }]}>{preset.name}</Text>
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Color Wheel Visualization */}
+        {polineInstance && (
+          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
+              <View style={styles.wheelContainer}>
+                <PolineColorWheel
+                  poline={polineInstance}
+                  size={280}
+                  showPaletteColors={true}
+                  reduceMotion={reduceMotion}
+                />
+              </View>
+            </View>
+          </BlurView>
+        )}
 
         {palette && (
           <View style={styles.paletteContainer}>
@@ -146,11 +189,15 @@ const InteriorScreen = () => {
               })}
             </View>
             <View style={styles.metaRow}>
-              {palette.map((hsl, i) => (
-                <View key={i} style={styles.metaItem}>
-                  <Text style={[styles.metaText, { color: theme.subtext }]}>{hslArrayToCss(hsl)}</Text>
-                </View>
-              ))}
+              {palette.map((hsl, i) => {
+                const bgColor = hslArrayToCss(hsl);
+                const textColor = getContrastTextColor(hsl);
+                return (
+                  <View key={i} style={[styles.metaItem, { backgroundColor: bgColor, borderRadius: 8, padding: 4 }]}>
+                    <Text style={[styles.metaText, { color: textColor }]}>{hslArrayToCss(hsl)}</Text>
+                  </View>
+                );
+              })}
             </View>
             {materialSuggestion && (
               <View style={[styles.materialSuggestionContainer, { backgroundColor: theme.card }]}>
@@ -166,12 +213,14 @@ const InteriorScreen = () => {
         <View style={styles.bottomActions}>
           <TouchableOpacity
             onPress={generateRandomPalette}
-            style={[styles.actionButton, { backgroundColor: theme.card }]}          >
+            style={[styles.actionButton, { backgroundColor: theme.card }]}
+          >
             <Text style={[styles.actionButtonText, { color: theme.text }]}>Randomize</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSavePalette}
-            style={[styles.actionButton, { backgroundColor: theme.primary }]}          >
+            style={[styles.actionButton, { backgroundColor: theme.primary }]}
+          >
             <Text style={[styles.actionButtonText, { color: theme.text }]}>Save Palette</Text>
           </TouchableOpacity>
         </View>
@@ -186,6 +235,21 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, fontFamily: 'PlayfairDisplay_700Bold', marginBottom: 4 },
   subtitle: { fontSize: 16, fontFamily: 'Inter_400Regular' },
   content: { flex: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
+  card: {
+    borderRadius: 24,
+    padding: 2,
+    overflow: 'hidden',
+    marginVertical: 12,
+  },
+  cardInner: {
+    padding: 20,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  cardTitle: { fontSize: 18, fontFamily: 'Inter_400Regular', fontWeight: '600' },
+  slider: { width: '100%', height: 40 },
+  wheelContainer: { alignItems: 'center', justifyContent: 'center' },
   presetContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -206,9 +270,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   swatchRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8, width: '100%' },
-  swatchTile: { width: (width - 80) / 5, height: 110, borderRadius: 12, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 12 },
+  swatchTile: { flex: 1, height: 110, borderRadius: 12, marginHorizontal: 2, boxShadow: '0px 5px 12px rgba(0, 0, 0, 0.35)' },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, width: '100%' },
-  metaItem: { width: (width - 80) / 5, alignItems: 'center' },
+  metaItem: { flex: 1, alignItems: 'center', marginHorizontal: 2 },
   metaText: { fontSize: 10, textAlign: 'center', fontFamily: 'Inter_400Regular' },
   materialSuggestionContainer: {
     marginTop: 20,

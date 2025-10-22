@@ -60,3 +60,47 @@ export function getMaterialSuggestion(hsl: number[]): string {
     return 'Marble, Linen';
   }
 }
+
+/**
+ * Returns the best text color (white or black) for maximum contrast with a background color
+ * @param hsl - HSL color array [h, s, l]
+ * @returns '#FFFFFF' for white or '#000000' for black
+ */
+export function getContrastTextColor(hsl: number[]): string {
+  // Convert HSL to RGB
+  const [r, g, b] = hslToRgb(hsl[0], hsl[1], hsl[2]);
+
+  // Calculate relative luminance
+  const luminance = getLuminance(r, g, b);
+
+  // Use white text for dark backgrounds, black for light backgrounds
+  // Threshold of 0.5 provides good visual contrast
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+}
+
+/**
+ * Returns a color with adjusted lightness for better visibility
+ * @param hsl - HSL color array [h, s, l]
+ * @param background - Background HSL color array
+ * @returns Adjusted HSL color array
+ */
+export function getVisibleTextColor(hsl: number[], background: number[]): number[] {
+  const [r1, g1, b1] = hslToRgb(hsl[0], hsl[1], hsl[2]);
+  const [r2, g2, b2] = hslToRgb(background[0], background[1], background[2]);
+
+  const contrast = getContrastRatio([r1, g1, b1], [r2, g2, b2]);
+
+  // WCAG AA requires 4.5:1 for normal text, 3:1 for large text
+  if (contrast >= 4.5) {
+    return hsl;
+  }
+
+  // Adjust lightness to improve contrast
+  const adjustedHsl = [...hsl];
+  const bgLuminance = getLuminance(r2, g2, b2);
+
+  // If background is dark, make text lighter; if light, make text darker
+  adjustedHsl[2] = bgLuminance > 0.5 ? 0.2 : 0.9;
+
+  return adjustedHsl;
+}

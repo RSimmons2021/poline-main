@@ -49,9 +49,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: 12,
     fontFamily: 'Inter_400Regular',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
+    textShadow: '1px 1px 10px rgba(0, 0, 0, 0.35)',
   },
 });
 
