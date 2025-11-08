@@ -5,6 +5,8 @@ import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-d
 import { Inter_400Regular } from '@expo-google-fonts/inter';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, ThemeContext } from './src/theme/ThemeContext';
+import { TamaguiProvider } from 'tamagui';
+import tamaguiConfig from './tamagui.config';
 
 const AppContent = () => {
   const { isDark } = useContext(ThemeContext);
@@ -27,8 +29,10 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </TamaguiProvider>
   );
 }

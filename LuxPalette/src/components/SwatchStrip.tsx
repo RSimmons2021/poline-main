@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { YStack, Text as TamaguiText } from 'tamagui';
 import { ThemeContext } from '../theme/ThemeContext';
 import FabricTextureOverlay from './FabricTextureOverlay';
 
@@ -21,36 +21,21 @@ const SwatchStrip: React.FC<SwatchStripProps> = ({ palette, textureType }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <YStack width="100%" flexDirection="column">
       {palette.map((hsl, i) => {
         const css = hslArrayToCss(hsl);
         return (
-          <View key={i} style={styles.swatch}>
+          <YStack key={i} height={50} alignItems="center" justifyContent="center" position="relative">
             <FabricTextureOverlay color={css} textureType={textureType} />
-            <Text style={[styles.swatchText, { color: theme.text }]}>{css}</Text>
-          </View>
+            <TamaguiText position="absolute" fontSize={12} color={theme.text} fontFamily="Inter_400Regular">
+              {css}
+            </TamaguiText>
+          </YStack>
         );
       })}
-    </View>
+    </YStack>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'column',
-    width: '100%',
-  },
-  swatch: {
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  swatchText: {
-    position: 'absolute',
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    textShadow: '1px 1px 10px rgba(0, 0, 0, 0.35)',
-  },
-});
 
 export default SwatchStrip;

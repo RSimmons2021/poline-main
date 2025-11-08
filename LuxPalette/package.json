@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "cross-env EXPO_NO_DOCTOR=1 expo start",
+    "android": "cross-env EXPO_NO_DOCTOR=1 expo start --android",
+    "ios": "cross-env EXPO_NO_DOCTOR=1 expo start --ios",
+    "web": "cross-env EXPO_NO_DOCTOR=1 expo start --web"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -16,6 +16,7 @@
     "@react-native-community/slider": "5.0.1",
     "@react-navigation/bottom-tabs": "^7.4.9",
     "@react-navigation/native": "^7.1.18",
+    "@tamagui/config": "^1.136.6",
     "expo": "54.0.17",
     "expo-blur": "~15.0.7",
     "expo-file-system": "~19.0.17",
@@ -34,11 +35,14 @@
     "react-native-shadow-2": "^7.1.2",
     "react-native-svg": "15.12.1",
     "react-native-view-shot": "^4.0.3",
-    "react-native-web": "^0.21.0"
+    "react-native-web": "^0.21.0",
+    "tamagui": "^1.136.6"
   },
   "devDependencies": {
     "@babel/plugin-transform-export-namespace-from": "^7.27.1",
+    "@tamagui/babel-plugin": "^1.136.6",
     "@types/react": "~19.1.0",
+    "cross-env": "^10.1.0",
     "typescript": "~5.9.2"
   },
   "private": true

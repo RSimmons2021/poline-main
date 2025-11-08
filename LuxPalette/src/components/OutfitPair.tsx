@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { XStack, YStack, Text as TamaguiText } from 'tamagui';
 import { hslToRgb, getContrastRatio } from '../utils/colors';
 import { ThemeContext } from '../theme/ThemeContext';
 
@@ -20,44 +20,21 @@ const OutfitPair: React.FC<OutfitPairProps> = ({ color1, color2 }) => {
   const contrastRatio = getContrastRatio(rgb1, rgb2);
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.colorBlock, { backgroundColor: hslArrayToCss(color1) }]} />
-      <View style={[styles.colorBlock, { backgroundColor: hslArrayToCss(color2) }]} />
-      <View style={styles.contrastContainer}>
-        <Text style={[styles.contrastText, { color: theme.text }]}>
+    <XStack alignItems="center" marginBottom={10}>
+      <YStack width={80} height={80} borderRadius={12} backgroundColor={hslArrayToCss(color1)} />
+      <YStack width={80} height={80} borderRadius={12} backgroundColor={hslArrayToCss(color2)} marginLeft={10} />
+      <YStack marginLeft={20}>
+        <TamaguiText fontSize={16} fontFamily="Inter_400Regular" color={theme.text}>
           Contrast Ratio: {contrastRatio.toFixed(2)}
-        </Text>
-        <Text style={[styles.contrastRating, { color: theme.subtext }]}>
+        </TamaguiText>
+        <TamaguiText fontSize={14} fontFamily="Inter_400Regular" color={theme.subtext} marginTop={5}>
           {contrastRatio >= 4.5 ? 'Good' : 'Poor'}
-        </Text>
-      </View>
-    </View>
+        </TamaguiText>
+      </YStack>
+    </XStack>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  colorBlock: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
-  contrastContainer: {
-    marginLeft: 20,
-  },
-  contrastText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  contrastRating: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    marginTop: 5,
-  },
-});
+// Styles removed as they are now handled by Tamagui components
 
 export default OutfitPair;

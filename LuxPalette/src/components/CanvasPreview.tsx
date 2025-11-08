@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { YStack } from 'tamagui';
 import Svg, { Circle } from 'react-native-svg';
 
 interface CanvasPreviewProps {
@@ -17,7 +17,7 @@ const CanvasPreview: React.FC<CanvasPreviewProps> = ({ palette }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <YStack alignItems="center">
       <Svg height="200" width="300">
         {palette.map((hsl, i) => {
           const css = hslArrayToCss(hsl);
@@ -35,14 +35,10 @@ const CanvasPreview: React.FC<CanvasPreviewProps> = ({ palette }) => {
           );
         })}
       </Svg>
-    </View>
+    </YStack>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-  },
-});
+// layout handled by Tamagui primitives
 
 export default CanvasPreview;
