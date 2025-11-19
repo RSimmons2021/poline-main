@@ -16,7 +16,10 @@
     "@react-native-community/slider": "5.0.1",
     "@react-navigation/bottom-tabs": "^7.4.9",
     "@react-navigation/native": "^7.1.18",
+    "@shopify/react-native-skia": "^2.3.10",
     "@tamagui/config": "^1.136.6",
+    "@tamagui/shorthands": "^1.136.6",
+    "@tamagui/themes": "^1.136.6",
     "expo": "54.0.17",
     "expo-blur": "~15.0.7",
     "expo-file-system": "~19.0.17",
@@ -36,6 +39,7 @@
     "react-native-svg": "15.12.1",
     "react-native-view-shot": "^4.0.3",
     "react-native-web": "^0.21.0",
+    "react-native-web-lite": "^1.112.4",
     "tamagui": "^1.136.6"
   },
   "devDependencies": {

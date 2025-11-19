@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generative Color Harmonies</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.14/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"></script>
+    <script src="https://raw.githubusercontent.com/meodai/color-names/master/dist/colornames.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/husl/6.0.1/husl.min.js"></script>
+</head>
+<body>
+    <div id="app" class="wrap">
+        <div class="bg"></div>
+        <div class="colors">
+            <button class="refresh" v-on:click="newColors">
+                <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 23 23" version="1.1" x="0px" y="0px"><path d="M 12.109896,2.9653518 C 10.830826,2.9134678 9.5257058,3.132602 8.2817758,3.648946 c -3.9806,1.652399 -6.2540499,5.897846 -5.4179699,10.123046 0.8360799,4.2253 4.5540699,7.274132 8.8613301,7.269532 a 0.9995584,1.0006417 14.999899 1 0 0,-2 c -3.3667302,0 -6.2475202,-2.360557 -6.9004002,-5.660157 -0.65294,-3.2997 1.11025,-6.592765 4.22266,-7.884765 3.1124002,-1.292 6.6825102,-0.213669 8.5488302,2.582031 1.85391,2.77709 1.49946,6.460477 -0.8418,8.845703 l 0.0781,-2.365234 a 1.0001,1.0001 0 0 0 -0.98242,-1.046875 1.0001,1.0001 0 0 0 -1.01758,0.982422 l -0.15235,4.59375 a 1.0001,1.0001 0 0 0 1.03321,1.033203 l 4.5957,-0.152344 a 1.0001,1.0001 0 1 0 -0.0664,-1.998047 l -1.79492,0.06055 c 2.74739,-3.056097 3.10892,-7.618693 0.80859,-11.064453 -1.64326,-2.461525 -4.33252,-3.887808 -7.14648,-4.0019532 z"/></svg>
+            </button>
+            <button class="expand" v-on:click="newColors">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" x="0px" y="0px"><defs><style>.cls-1{fill:none;stroke:#000;stroke-linecap:round;stroke-linejoin:round;}</style></defs><polyline class="cls-1" points="18.5 14.5 21.5 11.5 18.5 8.5"/><polyline class="cls-1" points="4.5 8.5 1.5 11.5 4.5 14.5"/><line class="cls-1" x1="1.5" y1="11.5" x2="8.5" y2="11.5"/><line class="cls-1" x1="14.5" y1="11.5" x2="21.5" y2="11.5"/></svg>
+            </button>
+            <div v-for="(c, i) in colors" class="color" :style="{ backgroundColor: c, color: getContrastColor(c) }">
+                <div class="label">{{ c }}</div>
+                <div class="name" v-if="names[i]">{{ names[i].name }}</div>
+            </div>
+        </div>
+        <a class="fulllink" href="https://farbvelo.elastiq.ch/" target="_blank">
+            <strong>
+                <span>F</span><span>u</span><span>l</span><span>l</span>
+                <span> </span>
+                <span>V</span><span>e</span><span>r</span><span>s</span><span>i</span><span>o</span><span>n</span>
+            </strong>
+        </a>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

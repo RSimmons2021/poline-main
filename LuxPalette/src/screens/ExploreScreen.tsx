@@ -1,250 +1,64 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, ScrollView } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Poline } from 'poline';
-import Animated, { useSharedValue, useAnimatedStyle, useAnimatedProps, withTiming, withRepeat, Easing, cancelAnimation } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import Slider from '@react-native-community/slider';
-import { savePalette } from '../utils/storage';
-import { toProtanopia, toDeuteranopia } from '../utils/colorBlindness';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { ThemeContext } from '../theme/ThemeContext';
-import AnimatedTile from '../components/AnimatedTile';
-import { PolineColorWheel } from '../components/PolineColorWheel';
-import ColorCombos from '../components/ColorCombos';
-import { getContrastTextColor, hslToHex, rgbToHsl } from '../utils/colors';
+import { GenerativeColorWheel } from '../components/GenerativeColorWheel';
 
 const { width } = Dimensions.get('window');
 
-type SimulationType = 'none' | 'protanopia' | 'deuteranopia';
-
-function hslArrayToCss(hsl: number[]): string {
-  const [h, s, l] = hsl;
-  return `hsl(${Math.round(h)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
-}
-
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
-
 const ExploreScreen = () => {
-  const { theme, isDark, reduceMotion, numPoints: globalNumPoints } = useContext(ThemeContext);
-  const [localNumPoints, setLocalNumPoints] = useState(globalNumPoints);
-  const [palette, setPalette] = useState<number[][]>([]);
-  const [polineInstance, setPolineInstance] = useState<Poline | null>(null);
-  const [simulation, setSimulation] = useState<SimulationType>('none');
-  const pulse = useSharedValue(0);
-  const animatedBackgroundColors = useSharedValue<string[]>(isDark ? ["#0f0f12", "#121216"] : [theme.background, theme.background]);
-  const [colorCombos, setColorCombos] = useState([]);
-
-  useEffect(() => {
-    fetch('https://raw.githubusercontent.com/mattdesl/dictionary-of-colour-combinations/master/colors.json')
-      .then(response => response.json())
-      .then(data => {
-        setColorCombos(data);
-      });
-  }, []);
-
-  const generateRandomPalette = () => {
-    if (colorCombos.length > 0) {
-      let anchorColors = [];
-      while (anchorColors.length < 2) {
-        const randomColor = colorCombos[Math.floor(Math.random() * colorCombos.length)];
-        anchorColors = [randomColor.rgb];
-        if (randomColor.combinations) {
-          randomColor.combinations.forEach(comboIndex => {
-            if (colorCombos[comboIndex]) {
-              anchorColors.push(colorCombos[comboIndex].rgb);
-            }
-          });
-        }
-      }
-
-      const hslAnchorColors = anchorColors.map(color => rgbToHsl(color[0], color[1], color[2]));
-      console.log('localNumPoints:', localNumPoints);
-      console.log('hslAnchorColors.length:', hslAnchorColors.length);
-
-      const gen = new Poline({ anchorColors: hslAnchorColors.slice(0, localNumPoints), numPoints: localNumPoints });
-      setPalette(gen.colors);
-      setPolineInstance(gen);
-    }
-  };
-
-  useEffect(() => {
-    if (colorCombos.length > 0) {
-      generateRandomPalette();
-    }
-  }, [colorCombos, localNumPoints]); // Regenerate palette when localNumPoints changes
-
-  useEffect(() => {
-    if (!reduceMotion) {
-      pulse.value = withRepeat(
-        withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.quad) }),
-        -1,
-        true
-      );
-    } else {
-      cancelAnimation(pulse); // Stop animation if reduce motion is enabled
-      pulse.value = 0; // Reset animation value
-    }
-  }, [reduceMotion, pulse]); // Re-run effect when reduceMotion or pulse changes
-
-  useEffect(() => {
-    if (palette.length > 0) {
-      const newColors = [
-        hslArrayToCss(palette[0]),
-        hslArrayToCss(palette[Math.floor(palette.length / 2)]),
-        hslArrayToCss(palette[palette.length - 1]),
-      ];
-      animatedBackgroundColors.value = withTiming(newColors, { duration: 1000 });
-    } else {
-      animatedBackgroundColors.value = withTiming(isDark ? ["#0f0f12", "#121216"] : [theme.background, theme.background], { duration: 1000 });
-    }
-  }, [palette, isDark, theme.background]);
-
-  const handleSavePalette = () => {
-    const newPalette = {
-      name: `Palette ${new Date().toLocaleTimeString()}`,
-      colors: palette,
-    };
-    savePalette(newPalette);
-    Alert.alert('Palette Saved!', 'Your new palette has been saved to your collection.');
-  };
-
-  const getSimulatedPalette = () => {
-    if (simulation === 'protanopia') {
-      return palette.map(toProtanopia);
-    }
-    if (simulation === 'deuteranopia') {
-      return palette.map(toDeuteranopia);
-    }
-    return palette;
-  };
-
-  const simulatedPalette = getSimulatedPalette();
-
-  const animatedGradientProps = useAnimatedProps(() => {
-    return {
-      colors: animatedBackgroundColors.value,
-    };
-  });
+  const { theme } = useContext(ThemeContext);
+  const [wheelStyle, setWheelStyle] = useState<'default' | 'dark' | 'blur' | 'notches' | 'trans'>('default');
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <AnimatedLinearGradient
-        animatedProps={animatedGradientProps}
-        style={StyleSheet.absoluteFill}
-      />
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Explore Palettes</Text>
-        <Text style={[styles.subtitle, { color: theme.subtext }]}>Discover new color combinations</Text>
+        <Text style={[styles.subtitle, { color: theme.subtext }]}>Discover color through generative art</Text>
       </View>
 
       <View style={styles.content}>
-        {/* Generated Palette */}
-        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>Generated Palette</Text>
-              <Text style={[styles.inspiration, { color: theme.subtext }]}>(inspired by A Dictionary of Color Combinations)</Text>
-              <View style={styles.actionsContainer}>
-                <TouchableOpacity
-                  onPress={generateRandomPalette}
-                  style={styles.actionButton}
-                >
-                  <Text style={[styles.actionText, { color: theme.text }]}>Randomize</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleSavePalette}
-                  style={[styles.actionButton, { backgroundColor: theme.primary }]}>
-                  <Text style={[styles.actionText, { color: theme.text }]}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* Generative Color Wheel - Main Centerpiece */}
+        <View style={[styles.centerpieceCard, { backgroundColor: theme.background, borderColor: theme.gridLine }]}>
+          <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 16, textAlign: 'center' }]}>
+            Generative Color Wheel
+          </Text>
+          <Text style={[styles.cardSubtitle, { color: theme.subtext, marginBottom: 20, textAlign: 'center' }]}>
+            Tap to regenerate • Inspired by Copic Color Wheel
+          </Text>
 
-            <View style={styles.swatchRow}>
-              {simulatedPalette.map((hsl, i) => (
-                <AnimatedTile
-                  key={i}
-                  hsl={hsl}
-                  index={i}
-                  reduceMotion={reduceMotion}
-                  pulse={pulse}
-                  width={width}
-                />
-              ))}
-            </View>
-
-            <View style={styles.metaRow}>
-              {simulatedPalette.map((hsl, i) => {
-                const bgColor = hslArrayToCss(hsl);
-                const textColor = getContrastTextColor(hsl);
-                return (
-                  <View key={i} style={[styles.metaItem, { backgroundColor: bgColor, borderRadius: 8, padding: 4 }]}>
-                    <Text style={[styles.metaText, { color: textColor }]}>{hslToHex(hsl[0], hsl[1] * 100, hsl[2] * 100)}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        </BlurView>
-
-        <ColorCombos />
-
-        {/* Palette Size Control */}
-        <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-          <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Palette Size: {localNumPoints} colors</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={3}
-              maximumValue={10}
-              step={1}
-              value={localNumPoints}
-              onSlidingComplete={setLocalNumPoints}
-              minimumTrackTintColor={theme.primary}
-              maximumTrackTintColor={theme.subtext}
-              thumbTintColor={theme.primary}
+          <View style={styles.wheelCenterpiece}>
+            <GenerativeColorWheel
+              style={wheelStyle}
+              size={Math.min(width * 0.85, 350)}
             />
           </View>
-        </BlurView>
 
-        {/* Color Wheel Visualization */}
-        {polineInstance && (
-          <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.card}>
-            <View style={[styles.cardInner, { backgroundColor: theme.card }]}>
-              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>Color Wheel</Text>
-              <View style={styles.wheelContainer}>
-                <PolineColorWheel
-                  poline={polineInstance}
-                  size={280}
-                  showPaletteColors={true}
-                  reduceMotion={reduceMotion}
-                />
-              </View>
+          {/* Wheel Style Dropdown/Selector */}
+          <View style={styles.styleSelector}>
+            <Text style={[styles.styleSelectorLabel, { color: theme.text }]}>Wheel Style</Text>
+            <View style={styles.styleButtons}>
+              {(['default', 'dark', 'blur', 'notches', 'trans'] as const).map((style) => (
+                <TouchableOpacity
+                  key={style}
+                  style={[
+                    styles.styleButton,
+                    {
+                      backgroundColor: wheelStyle === style ? theme.primary : theme.card,
+                      borderWidth: 2,
+                      borderColor: theme.gridLine
+                    }
+                  ]}
+                  onPress={() => setWheelStyle(style)}
+                >
+                  <Text style={[
+                    styles.styleButtonText,
+                    { color: wheelStyle === style ? '#FFF' : theme.text }
+                  ]}>
+                    {style.charAt(0).toUpperCase() + style.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          </BlurView>
-        )}
-
-        {/* Color Blindness Simulator */}
-        <View style={styles.simulatorContainer}>
-          <Text style={[styles.simulatorTitle, { color: theme.text }]}>Color Blindness Simulator</Text>
-          <View style={styles.simulatorButtons}>
-            <TouchableOpacity
-              style={[styles.simulatorButton, simulation === 'none' && { backgroundColor: theme.primary }]}
-              onPress={() => setSimulation('none')}
-            >
-              <Text style={[styles.actionText, { color: theme.text }]}>None</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.simulatorButton, simulation === 'protanopia' && { backgroundColor: theme.primary }]}
-              onPress={() => setSimulation('protanopia')}
-            >
-              <Text style={[styles.actionText, { color: theme.text }]}>Protanopia</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.simulatorButton, simulation === 'deuteranopia' && { backgroundColor: theme.primary }]}
-              onPress={() => setSimulation('deuteranopia')}
-            >
-              <Text style={[styles.actionText, { color: theme.text }]}>Deuteranopia</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -254,58 +68,93 @@ const ExploreScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 24, paddingTop: 48 },
-  title: { fontSize: 32, fontFamily: 'PlayfairDisplay_700Bold',
-    marginBottom: 4 },
-  subtitle: { fontSize: 16, fontFamily: 'Inter_400Regular' },
-  content: { flex: 1, paddingHorizontal: 20, justifyContent: 'center', paddingBottom: 40 },
-  card: {
-    borderRadius: 24,
-    padding: 2,
-    overflow: 'hidden',
-    marginVertical: 12,
+  header: {
+    padding: 24,
+    paddingTop: 60,
+    paddingBottom: 32,
   },
-  cardInner: {
-    padding: 20,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-  },
-  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontFamily: 'Inter_400Regular', fontWeight: '600' },
-  inspiration: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    fontStyle: 'italic',
-    marginLeft: 10,
-  },
-  actionsContainer: { flexDirection: 'row' },
-  actionButton: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, marginLeft: 10 },
-  actionText: { fontSize: 12, fontFamily: 'Inter_400Regular' },
-  swatchRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 },
-  metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  metaItem: { flex: 1, alignItems: 'center', marginHorizontal: 2 },
-  metaText: { fontSize: 10, textAlign: 'center', fontFamily: 'Inter_400Regular' },
-  slider: { width: '100%', height: 40 },
-  wheelContainer: { alignItems: 'center', justifyContent: 'center' },
-  simulatorContainer: {
-    marginTop: 20,
-  },
-  simulatorTitle: {
-    fontSize: 18,
+  title: {
+    fontSize: 36,
     fontFamily: 'PlayfairDisplay_700Bold',
-    marginBottom: 10,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 17,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 24,
+    opacity: 0.8,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40
+  },
+  centerpieceCard: {
+    borderRadius: 24,
+    padding: 32,
+    marginVertical: 20,
+    marginBottom: 32,
+    borderWidth: 4,
+    shadowColor: '#1A1714',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  cardSubtitle: {
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 6,
+    lineHeight: 22,
+    opacity: 0.75,
+  },
+  wheelCenterpiece: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 24,
+    marginBottom: 28,
+  },
+  styleSelector: {
+    marginTop: 28,
+    paddingTop: 24,
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(26, 23, 20, 0.1)',
+  },
+  styleSelectorLabel: {
+    fontSize: 17,
+    fontFamily: 'Inter_400Regular',
+    fontWeight: '600',
+    marginBottom: 14,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
-  simulatorButtons: {
+  styleButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
   },
-  simulatorButton: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+  styleButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    marginVertical: 5,
+    minWidth: 90,
+  },
+  styleButtonText: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.3,
   },
 });
 

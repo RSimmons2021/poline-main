@@ -11,7 +11,9 @@
       "Bash($env:EXPO_NO_DOCTOR=\"1\")",
       "Bash(taskkill:*)",
       "Bash(export EXPO_NO_DOCTOR=1)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(curl:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

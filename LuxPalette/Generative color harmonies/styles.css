@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css?family=Space+Mono');
+
+button {
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: normal;
+  -webkit-font-smoothing: inherit;
+  -moz-osx-font-smoothing: inherit;
+  -webkit-appearance: none;
+}
+
+html {
+  font-size: calc(.75rem + 1.15vh);
+  font-family: 'Space Mono', monospace;
+}
+
+body {
+  height: 100vh;
+  margin: 0;
+  background: #212121;
+  overflow: hidden;
+}
+
+.wrap, .bg {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+.bg {
+  transition: background-image 0.5s ease;
+}
+
+.colors {
+  position: absolute;
+  left: 50%;
+  bottom: 10vmin;
+  top: 10vmin;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transform: translateX(-50%);
+  width: 52%;
+}
+
+@media (max-width: 700px) {
+  .colors {
+    width: 75%;
+  }
+}
+
+.color {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  flex-grow: 1;
+  transition: 200ms color linear, 200ms background-color linear, 300ms padding-bottom cubic-bezier(.7, .3, .3, 1) 100ms;
+  min-height: 0.1vmax;
+}
+
+.color::after {
+  opacity: .5;
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0; top: 0;
+  box-shadow: 0 0 10rem currentColor;
+}
+
+@media (max-width: 700px) {
+  .color {
+    display: block;
+    padding: 1rem;
+  }
+}
+
+.color:last-child {
+  padding-bottom: calc(1.61803 * 4rem);
+}
+
+.color:hover {
+  padding-bottom: calc(1.61803 * 4rem);
+}
+
+.colors:hover .color:last-child {
+  padding-bottom: 1rem;
+}
+
+.colors:hover .color:hover {
+  padding-bottom: calc(1.61803 * 4rem);
+}
+
+.label {
+  flex-grow: 1;
+  padding-right: 1rem;
+  font-size: .75em;
+}
+
+.name {
+  font-size: .8em;
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .label {
+    font-size: .6em;
+    margin-bottom: .15em;
+  }
+  
+  .name {
+    text-align: left;
+  }
+}
+
+.refresh,
+.expand {
+  z-index: 1;
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  margin: 0;
+  padding: 0;
+  transform: translate(-60%, -60%);
+  font-size: 2em;
+  width: 1.2em;
+  height: 1.2em;
+  background: #000;
+  color: #fff;
+  border-radius: 50%;
+  outline: 0;
+  box-shadow: 0 0 2rem rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+.refresh svg,
+.expand svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: .6em;
+  height: .6em;
+  fill: #fff;
+}
+
+.refresh svg {
+  animation: rotate 3s linear infinite;
+  animation-play-state: paused;
+}
+
+.refresh:hover svg {
+  animation-play-state: running;
+}
+
+.expand {
+  display: none;
+  margin-left: -1.4em;
+}
+
+.expand svg {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+  animation: none;
+  width: .75em;
+  height: .75em;
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.fulllink {
+  position: fixed;
+  top: 0;
+  right: 0;
+  font-size: .65em;
+  text-decoration: none;
+  padding: 1.2em 3.5em;
+  width: 10ex;
+  text-align: center;
+  transform: translateX(30%) rotate(45deg);
+}
+
+.fulllink span {
+  position: relative;
+  animation: .5s ease-in 1s infinite alternate jumpup;
+  animation-duration: 1s;
+}
+
+@for $i from 1 through 20 {
+  .fulllink span:nth-child($i) {
+    animation-delay: calc(1000ms + $i * 100ms);
+  }
+}
+
+@keyframes jumpup {
+  100% {
+    opacity: .1;
+  }
+}

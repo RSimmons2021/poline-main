@@ -29,8 +29,8 @@ const TabNavigator = () => {
             iconName = focused ? 'shirt' : 'shirt-outline';
           } else if (route.name === 'Painting') {
             iconName = focused ? 'color-palette' : 'color-palette-outline';
-          } else if (route.name === 'Saved') {
-            iconName = focused ? 'bookmark' : 'bookmark-outline';
+          } else if (route.name === 'Library') {
+            iconName = focused ? 'library' : 'library-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
@@ -41,6 +41,8 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           backgroundColor: theme.tabBar,
+          borderTopColor: theme.gridLine,
+          borderTopWidth: 2,
         },
         headerShown: false,
       })}
@@ -49,7 +51,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Interior" component={InteriorScreen} />
       <Tab.Screen name="Fashion" component={FashionScreen} />
       <Tab.Screen name="Painting" component={PaintingScreen} />
-      <Tab.Screen name="Saved" component={SavedScreen} />
+      <Tab.Screen name="Library" component={SavedScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

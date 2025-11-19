@@ -1,0 +1,63 @@
+:root {
+  --font: 'Inter', sans-serif;
+  font-size: calc(.6rem + .4vh);
+  background: #ffffff;
+  font-family: var(--font);
+  /* font-feature-settings trimmed to avoid invalid tokens in plain CSS */
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+h1 {
+  z-index: 2;
+  position: absolute;
+  color: #fff;
+  font-weight: 900;
+  font-size: 8vh;
+  bottom: 3rem;
+  right: 3rem;
+  line-height: 1;
+}
+
+h1 span {
+  display: none;
+  font-size: .21em;
+  line-height: 1;
+  font-weight: 700;
+  text-align: right;
+  text-transform: uppercase;
+  margin-top: .2em;
+}
+
+.section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.section__inner {
+  /* center the poster block */
+  position: relative;
+  top: 50%;
+  left: 50%;
+  height: 95vh;
+  width: 70vh;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 2rem rgba(0,0,0,.25);
+}
+
+.section__inner canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

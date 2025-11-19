@@ -3,17 +3,17 @@ import { darkTheme, lightTheme } from './themes';
 import { getSettings, saveSettings } from '../utils/storage';
 
 export const ThemeContext = createContext({
-  isDark: true,
+  isDark: false,
   theme: darkTheme,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
   reduceMotion: false,
-  setReduceMotion: (value: boolean) => {},
+  setReduceMotion: (value: boolean) => { },
   numPoints: 5, // New property
-  setNumPoints: (value: number) => {},
+  setNumPoints: (value: number) => { },
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [numPoints, setNumPoints] = useState(5);
 
