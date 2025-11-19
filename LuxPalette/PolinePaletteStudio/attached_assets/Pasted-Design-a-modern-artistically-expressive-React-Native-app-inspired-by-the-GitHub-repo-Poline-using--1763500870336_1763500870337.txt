@@ -1,0 +1,160 @@
+Design a modern, artistically expressive React Native app inspired by the GitHub repo Poline, using the new components I provide.
+The UI should feel like it was created by a fine artist, not a software engineer.
+
+🎨 Global Art Direction
+
+Overall Aesthetic:
+Blend the artistic styles of Piet Mondrian, Wassily Kandinsky, and early Bauhaus graphic design.
+
+Background Color:
+Use a soft, warm beige (#f5f0e8 or similar) as the primary background across the entire app.
+
+Stylistic Notes:
+
+Strong geometric lines and structure (Bauhaus / Mondrian).
+
+Playful circular motion, abstract shapes, and expressive compositions (Kandinsky).
+
+Color as a living element — subtle animations, micro-interactions, and fluid transitions.
+
+The UI should look like a high-end art magazine, not a typical mobile app.
+
+Minimal text; let structure + shape + color do most of the communication.
+
+Visual Traits:
+
+Glassmorphic overlays with subtle frosted blur.
+
+Thin but strong geometric dividers.
+
+Soft shadows, crisp edges, high contrast with the beige base.
+
+Dynamic color shifts on scroll or gestures.
+
+📱 App Structure
+Tabs: Explore • Painting • Interior • Library
+🌈 Tab 1 — EXPLORE (Centerpiece: Generative Color Wheel)
+
+Use the Generative Copic Color Wheel component (from the “Generative Color Wheel” folder) as the main visual anchor.
+
+Layout
+
+Full-screen wheel on the beige background.
+
+Thin geometric lines radiating outward (à la Kandinsky) to frame content.
+
+Subtle motion and breathing animation on idle.
+
+Controls
+
+Add a glassmorphic dropdown menu above or below the wheel:
+
+“Wheel Style” Dropdown Options
+
+Copic Wheel
+
+Poline Wheel
+
+Kandinsky Spiral
+
+Mondrian Block Wheel
+
+Bauhaus Grid Wheel
+
+Random Mode
+
+Other Requirements
+
+Use the beige background as the global app background (all tabs).
+
+The Explore tab defines the geometry of the entire visual language.
+
+Integrate previous color palette generator behavior on tap/drag (Poline-driven).
+
+🖼 Tab 2 — PAINTING (Full-Screen Generative Poster)
+
+Use the Generative Poster component from your "Generative Poster" folder.
+
+Layout
+
+The entire background of the tab is the component (no margins).
+
+Place minimal floating controls as small geometric glass blocks.
+
+The poster evolves when the palette changes.
+
+Allow save/share/export buttons on small floating geometry elements.
+
+Inspiration
+
+Think constructivist posters + Kandinsky abstract compositions.
+
+Beige frames the art but recedes behind it.
+
+🏠 Tab 3 — INTERIOR (Replace Component w/ Generative Harmonies)
+
+Use the Generative Color Harmonies component as the full tab interface.
+
+Requirements
+
+Remove any existing interior-design component — replace it with this one.
+
+The tab’s background should shift dynamically based on harmony colors (like the component does natively).
+
+Shadowed geometric frames inspired by Mondrian to contain content or palette outputs.
+
+Other Integrations
+
+Continue using Poline to generate color sets.
+
+Allow switching between:
+
+Complementary
+
+Analogous
+
+Split
+
+Triadic
+
+Interior Trend Mode (warm minimalism, wabi sabi, brutalist, luxe)
+
+📚 Tab 4 — LIBRARY (Dictionary of Color Combinations)
+
+Integrate the “A Dictionary of Color Combinations” palette generator you already implemented.
+
+Design Style
+
+Beige Bauhaus background.
+
+Thin vertical and horizontal lines reminiscent of Mondrian compositions.
+
+Large grid-based color swatches that animate subtly.
+
+Smooth scroll with micro-interactions when selecting a palette.
+
+**🧩 Component Integration Requirements
+
+Integrate all previous features from your older app into these new components:
+
+Saved palettes
+
+Export to PNG/JSON
+
+“Tap to randomize”
+
+Gesture-based color manipulation
+
+Dynamic color transitions
+
+Glassmorphic pop-up modals for settings and info
+
+Poline-powered generative color logic throughout the app
+
+🔥 Vibe / Emotional Tone
+
+“An art studio disguised as an app.
+A color tool disguised as a gallery.
+A palette generator disguised as a magazine.”
+
+The entire experience should feel like a creative instrument, not a utility.
