@@ -6,10 +6,14 @@ export default function Library() {
     const { savedPalettes, setPalette, deletePalette } = useColors();
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="bg-background p-4">
+        <ScrollView
+            className="flex-1 bg-background"
+            contentContainerStyle={{ padding: 16 }}
+            showsVerticalScrollIndicator={false}
+        >
             <Text className="text-3xl font-syne text-foreground mb-6 mt-10">Library</Text>
 
-            {/* Color Combinations */}
+            {/* Color Combinations - Scrollable */}
             <ColorCombos />
 
             {/* Saved Palettes */}

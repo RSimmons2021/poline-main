@@ -65,17 +65,25 @@ const ColorCombos = () => {
   }, []);
 
   const renderItem = ({ item }: { item: ColorCombo }) => {
-    const firstColorHex = item.colors[0];
-    const firstColorHsl = hexToHsl(firstColorHex);
-    const textColor = getContrastTextColor(firstColorHsl);
-
     return (
       <View style={styles.comboContainer}>
-        <Text style={[styles.comboName, { color: '#FFFFFF' }]}>{item.name}</Text>
+        <Text style={styles.comboName}>{item.name}</Text>
         <View style={styles.colorBlocksContainer}>
-          {item.colors.map((color, index) => (
-            <View key={index} style={[styles.colorBlock, { backgroundColor: color }]} />
-          ))}
+          {item.colors.map((color, index) => {
+            // Use local contrast calculation
+            const hsl = hexToHsl(color);
+            const contrastColor = hsl[2] > 0.5 ? '#000000' : '#FFFFFF';
+
+            return (
+              <View key={index} style={styles.colorBlockWrapper}>
+                <View style={[styles.colorBlock, { backgroundColor: color }]}>
+                  <Text style={[styles.hexCode, { color: contrastColor }]}>
+                    {color.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
         </View>
       </View>
     );
@@ -98,26 +106,46 @@ const ColorCombos = () => {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
+    marginBottom: 20,
   },
   title: {
     fontSize: 18,
-    fontFamily: 'PlayfairDisplay_700Bold',
+    fontWeight: '600',
     marginBottom: 10,
+    paddingHorizontal: 4,
   },
   comboContainer: {
-    marginRight: 10,
-    alignItems: 'center',
+    marginRight: 16,
+    width: 140,
   },
   comboName: {
-    fontSize: 12,
-    marginBottom: 5,
+    fontSize: 11,
+    marginBottom: 8,
+    fontWeight: '500',
+    color: '#666',
   },
   colorBlocksContainer: {
-    flexDirection: 'row',
+    gap: 8,
+  },
+  colorBlockWrapper: {
+    marginBottom: 4,
   },
   colorBlock: {
-    width: 50,
-    height: 50,
+    width: '100%',
+    height: 60,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  hexCode: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });
 

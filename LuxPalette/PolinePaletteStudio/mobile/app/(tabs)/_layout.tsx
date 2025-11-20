@@ -1,26 +1,39 @@
-import { Tabs, usePathname } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 import { LayoutGrid, Shirt, Armchair, Palette, Library } from "lucide-react-native";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { useColors } from "../../context/ColorContext";
-import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { useMemo } from "react";
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from "react-native-reanimated";
+import { useEffect } from "react";
 
 const TAB_ROUTES = ["index", "fashion", "interior", "painting", "library"];
 
 export default function TabLayout() {
     const { activeColor } = useColors();
-    const pathname = usePathname();
+    const segments = useSegments();
+    const { width } = useWindowDimensions();
 
-    // Calculate dot position based on active tab
-    const activeIndex = useMemo(() => {
-        const route = pathname.split('/').pop() || 'index';
-        const index = TAB_ROUTES.indexOf(route === '' ? 'index' : route);
+    // Calculate tab width dynamically
+    const tabWidth = width / 5;
+    const dotPosition = useSharedValue(0);
+
+    // Get active tab index from segments
+    const activeIndex = (() => {
+        const lastSegment = segments[segments.length - 1];
+        const route = lastSegment === '(tabs)' ? 'index' : lastSegment;
+        const index = TAB_ROUTES.indexOf(route);
         return index === -1 ? 0 : index;
-    }, [pathname]);
+    })();
+
+    useEffect(() => {
+        dotPosition.value = withSpring(activeIndex * tabWidth + tabWidth / 2 - 4, {
+            damping: 20,
+            stiffness: 200,
+        });
+    }, [activeIndex, tabWidth]);
 
     const dotStyle = useAnimatedStyle(() => {
         return {
-            transform: [{ translateX: withSpring(activeIndex * 75, { damping: 15, stiffness: 150 }) }],
+            transform: [{ translateX: dotPosition.value }],
         };
     });
 
@@ -30,7 +43,7 @@ export default function TabLayout() {
                 screenOptions={{
                     headerShown: false,
                     tabBarStyle: {
-                        backgroundColor: "#f5f0e8", // bg-background
+                        backgroundColor: "#f5f0e8",
                         borderTopColor: "rgba(0,0,0,0.1)",
                         height: 60,
                         paddingBottom: 10,
@@ -76,8 +89,15 @@ export default function TabLayout() {
                 />
             </Tabs>
 
-            {/* Moving Dot Indicator */}
-            <View style={{ position: 'absolute', bottom: 5, left: 37.5, right: 0, height: 4, alignItems: 'flex-start' }}>
+            {/* Moving Dot Indicator - Fixed positioning */}
+            <View style={{
+                position: 'absolute',
+                bottom: 8,
+                left: 0,
+                right: 0,
+                height: 8,
+                pointerEvents: 'none'
+            }}>
                 <Animated.View
                     style={[
                         {
