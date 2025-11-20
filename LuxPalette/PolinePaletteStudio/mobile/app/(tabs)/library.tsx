@@ -1,41 +1,53 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "../../context/ColorContext";
-import { Trash2 } from "lucide-react-native";
+import ColorCombos from "../../components/ColorCombos";
 
 export default function Library() {
-    const { savedPalettes, deletePalette, setPalette } = useColors();
+    const { savedPalettes, setPalette, deletePalette } = useColors();
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="bg-background p-4">
             <Text className="text-3xl font-syne text-foreground mb-6 mt-10">Library</Text>
 
-            {savedPalettes.length === 0 ? (
-                <View className="flex-1 items-center justify-center opacity-50">
-                    <Text className="font-space">No saved palettes yet.</Text>
-                </View>
-            ) : (
-                <View className="gap-4">
-                    {savedPalettes.map((saved) => (
-                        <TouchableOpacity
-                            key={saved.id}
-                            className="bg-white p-4 rounded-xl shadow-sm border border-black/5"
-                            onPress={() => setPalette(saved.colors)}
-                        >
-                            <View className="flex-row justify-between items-center mb-3">
-                                <Text className="font-space font-bold text-lg">{saved.name}</Text>
-                                <TouchableOpacity onPress={() => deletePalette(saved.id)}>
-                                    <Trash2 size={18} color="#ef4444" />
-                                </TouchableOpacity>
-                            </View>
-                            <View className="flex-row h-12 rounded-lg overflow-hidden">
-                                {saved.colors.map((c, i) => (
-                                    <View key={i} style={{ flex: 1, backgroundColor: c }} />
+            {/* Color Combinations */}
+            <ColorCombos />
+
+            {/* Saved Palettes */}
+            <View className="mt-8">
+                <Text className="text-xl font-syne text-foreground mb-4">Saved Palettes</Text>
+                {savedPalettes.length === 0 ? (
+                    <Text className="text-muted-foreground font-space">No saved palettes yet</Text>
+                ) : (
+                    savedPalettes.map((savedPalette) => (
+                        <View key={savedPalette.id} className="mb-4 p-4 bg-white/30 rounded-lg border border-white/20">
+                            <Text className="text-sm font-space mb-2">{savedPalette.name}</Text>
+                            <View className="flex-row gap-2 mb-2">
+                                {savedPalette.colors.map((color: string, i: number) => (
+                                    <View
+                                        key={i}
+                                        style={{ backgroundColor: color }}
+                                        className="w-12 h-12 rounded-lg border border-black/5"
+                                    />
                                 ))}
                             </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            )}
+                            <View className="flex-row gap-2">
+                                <TouchableOpacity
+                                    onPress={() => setPalette(savedPalette.colors)}
+                                    className="flex-1 p-2 bg-black/10 rounded-lg"
+                                >
+                                    <Text className="text-center font-space text-xs">Apply</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => deletePalette(savedPalette.id)}
+                                    className="flex-1 p-2 bg-red-500/20 rounded-lg"
+                                >
+                                    <Text className="text-center font-space text-xs text-red-700">Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    ))
+                )}
+            </View>
         </ScrollView>
     );
 }
