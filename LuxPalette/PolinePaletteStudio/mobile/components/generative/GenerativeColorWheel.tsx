@@ -252,7 +252,7 @@ export const GenerativeColorWheel: React.FC<GenerativeColorWheelProps> = ({
   return (
     <View style={styles.container}>
       {/* Controls */}
-      <View className="absolute top-0 z-50 flex-row gap-4 items-center" style={{ top: -60 }}>
+      <View className="mb-4 flex-row gap-4 items-center justify-center">
         <GlassDropdown
           options={WHEEL_STYLES}
           selected={wheelStyle}
@@ -316,7 +316,7 @@ export const GenerativeColorWheel: React.FC<GenerativeColorWheelProps> = ({
       </View>
 
       {/* Active Color Indicator */}
-      <View className="absolute bottom-0 pointer-events-none" style={{ bottom: -80 }}>
+      <View className="mt-4 pointer-events-none">
         <BlurView intensity={20} className="w-16 h-16 rounded-full items-center justify-center overflow-hidden border border-black/5">
           <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: activeColor }} />
         </BlurView>

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Modal, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Pressable } from "react-native";
 import { BlurView } from "expo-blur";
-import Animated, { useAnimatedStyle, withTiming, useSharedValue } from "react-native-reanimated";
 import { ChevronDown } from "lucide-react-native";
-import { clsx } from "clsx";
 
 interface GlassDropdownProps {
     options: string[];
@@ -13,56 +11,66 @@ interface GlassDropdownProps {
 
 export default function GlassDropdown({ options, selected, onSelect }: GlassDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const rotate = useSharedValue(0);
+    const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
-    const toggleDropdown = () => {
-        setIsOpen(!isOpen);
-        rotate.value = withTiming(isOpen ? 0 : 180);
+    const handleSelect = (option: string) => {
+        onSelect(option);
+        setIsOpen(false);
     };
 
-    const animatedIconStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ rotate: `${rotate.value}deg` }],
-        };
-    });
-
     return (
-        <View className="relative z-50">
-            <Pressable onPress={toggleDropdown}>
-                <BlurView intensity={30} tint="light" className="px-4 py-2 rounded-lg flex-row items-center gap-2 overflow-hidden border border-white/20">
-                    <Text className="text-sm font-space text-foreground">{selected}</Text>
-                    <Animated.View style={animatedIconStyle}>
-                        <ChevronDown size={14} color="#000" />
-                    </Animated.View>
-                </BlurView>
-            </Pressable>
+        <View>
+            <TouchableOpacity
+                onLayout={(event) => {
+                    const { x, y, width, height } = event.nativeEvent.layout;
+                    setButtonLayout({ x, y, width, height });
+                }}
+                onPress={() => setIsOpen(!isOpen)}
+                className="px-4 py-2 rounded-lg border border-white/20 bg-white/30 flex-row items-center gap-2"
+            >
+                <Text className="text-sm font-space">{selected}</Text>
+                <ChevronDown size={16} color="#000" />
+            </TouchableOpacity>
 
-            {isOpen && (
-                <View className="absolute top-full mt-2 left-0 w-48 rounded-lg overflow-hidden shadow-xl border border-white/20 z-50">
-                    <BlurView intensity={80} tint="light" className="py-1">
-                        {options.map((option) => (
-                            <Pressable
-                                key={option}
-                                onPress={() => {
-                                    onSelect(option);
-                                    toggleDropdown();
-                                }}
-                                className={clsx(
-                                    "px-4 py-3",
-                                    selected === option ? "bg-black/5" : ""
-                                )}
-                            >
-                                <Text className={clsx(
-                                    "text-sm font-space text-foreground",
-                                    selected === option ? "font-bold" : ""
-                                )}>
-                                    {option}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </BlurView>
-                </View>
-            )}
+            <Modal
+                visible={isOpen}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setIsOpen(false)}
+            >
+                <Pressable
+                    style={{ flex: 1 }}
+                    onPress={() => setIsOpen(false)}
+                >
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: buttonLayout.y + buttonLayout.height + 5,
+                            left: buttonLayout.x,
+                            minWidth: 200,
+                            borderRadius: 8,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <BlurView intensity={80} tint="light" style={{ borderRadius: 8 }}>
+                            <View className="border border-white/20 rounded-lg overflow-hidden">
+                                {options.map((option, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        onPress={() => handleSelect(option)}
+                                        className="px-4 py-3 border-b border-white/10"
+                                        style={{
+                                            backgroundColor: option === selected ? 'rgba(0,0,0,0.05)' : 'transparent'
+                                        }}
+                                    >
+                                        <Text className="text-sm font-space">{option}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </BlurView>
+                    </View>
+                </Pressable>
+            </Modal>
         </View>
     );
 }
